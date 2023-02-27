@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<title>Universal Pokemon Randomizer</title>
+<meta name=color-scheme content=dark>
+<script src=https://cjrtnc.leaningtech.com/2.3/loader.js></script>
+</head>
+<body>
+<label for=rompicker>Select Pokémon rom:</label>
+<input type=file id=rompicker accept=.gb,.sgb,.gbc,.gba,.nds>
+<p>When the app starts, find your rom in the <code>/str/</code> folder.
+<p><strong>Save your randomized rom in the <code>/files/</code> folder.</strong>
+<p><button id=save>Download contents of <code>/files/</code> folder</button>
+<script>
+const rompicker=document.getElementById("rompicker")
+rompicker.addEventListener('change', addFileToVFSandStart);
+document.getElementById("save").addEventListener('click', exportfiles)
+async function addFileToVFSandStart(e){
+	await cheerpjInit();
+	// put settings files in filesystem
+	for (let i of ['balanced','classic','randomizer_race','super_randomizer_race','trainers_only']) {
+		settingFile=await fetch('settings/'+i+'.rnqs')
+		settingFile=await settingFile.arrayBuffer()
+		settingFileUint8=new Uint8Array(settingFile);
+		cheerpjAddStringFile("/str/settings/"+i+".rnqs", settingFileUint8);
+	}
+	await cheerpjCreateDisplay(1500,500);
+	//rompicker.files[0]
+	const reader=new FileReader();
+	reader.readAsArrayBuffer(e.target.files[0]);
+	reader.onloadend = (evt) => {
+		if (evt.target.readyState === FileReader.DONE) {
+			let arrayBuffer = evt.target.result
+			var array = new Uint8Array(arrayBuffer);
+			cheerpjAddStringFile("/str/"+e.target.files[0].name, array);
+			cheerpjRunJar("/app/randomizer.jar");
+		}
+	}
+}
+function exportfiles(){
+	let db;
+	const request = indexedDB.open("cjFS_/files/");
+	request.onsuccess = (event) => {
+		db = event.target.result;
+		/*db.transaction("files").objectStore("files").get("test-output.gbc").onsuccess = (event) => {
+			var romdataObj=event.target.result.contents
+			romdataValues=Object.values(romdataObj) // array
+			//const buffer=new ArrayBuffer(romdataValues.length)
+			//const view = new Uint8Array(buffer);
+			const romdata8array = Uint8Array.from(romdataValues);
+			
+			const file = new File([romdata8array], 'test-output.gbc')
+			download(file)
+		};*/
+		db.transaction("files").objectStore("files").getAll().onsuccess = (event) => {
+			files=event.target.result
+			filenames=files[0].contents
+			files.shift()
+			for (let i=0, l=files.length; i<l; i++) {
+				const file = new File([files[i].contents], filenames[i].substring(1))
+				download(file)
+			}
+			/*var romdataObj=event.target.result.contents
+			romdataValues=Object.values(romdataObj) // array
+			const romdata8array = Uint8Array.from(romdataValues);
+			
+			const file = new File([romdata8array], 'test-output.gbc')
+			download(file)*/
+		};
+	};
+
+}
+
+function download(file) {
+	const link = document.createElement('a')
+	const url = URL.createObjectURL(file)
+	
+	link.href = url
+	link.download = file.name
+	document.body.appendChild(link)
+	link.click()
+	
+	document.body.removeChild(link)
+	window.URL.revokeObjectURL(url)
+}
+</script>
+</body>
+</html>
