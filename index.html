@@ -34,7 +34,7 @@ async function addFileToVFSandStart(e){
 			let arrayBuffer = evt.target.result
 			var array = new Uint8Array(arrayBuffer);
 			cheerpjAddStringFile("/str/"+e.target.files[0].name, array);
-			cheerpjRunJar("/app/randomizer.jar");
+			cheerpjRunJar("/app/OnlineUniversalPokemonRandomizer/randomizer.jar");
 		}
 	}
 }
