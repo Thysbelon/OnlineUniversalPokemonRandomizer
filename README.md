@@ -1,5 +1,5 @@
 # OnlineUniversalPokemonRandomizer
-This is a quick port of Dabomstew's Universal Pokemon Randomizer Javascript via CheerpJ.
+This is a quick port of Dabomstew's Universal Pokemon Randomizer to the web via CheerpJ.
 
 It is identical to the jar file. The interface is awkward on mobile; I recorded a [demo of myself loading a file on mobile](https://youtube.com/watch?v=7wB2I31yrK4) to (hopefully) help.
 
